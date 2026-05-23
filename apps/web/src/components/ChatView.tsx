@@ -7333,9 +7333,9 @@ export default function ChatView({
     return (
       <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--color-background-surface)] text-[var(--color-text-foreground-secondary)]">
         {!isElectron && (
-          <header className="border-b border-[color:var(--color-border-light)] px-3 py-2 md:hidden">
+          <header className="border-b border-[color:var(--color-border-light)] px-3 pb-2 pt-[calc(0.5rem+env(safe-area-inset-top))] md:hidden">
             <div className="flex items-center gap-2">
-              <SidebarHeaderTrigger className="size-7 shrink-0" />
+              <SidebarHeaderTrigger className="size-9 shrink-0" />
               <span className="text-sm font-medium text-[var(--color-text-foreground)]">
                 Threads
               </span>
@@ -7976,8 +7976,10 @@ export default function ChatView({
       {/* Top bar */}
       <header
         className={cn(
-          "border-b border-[color:var(--color-border-light)] px-3 sm:px-5",
-          isElectron ? "drag-region flex h-[52px] items-center" : "py-2 sm:py-3",
+          "border-b border-[color:var(--color-border-light)] px-3 pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))] sm:px-5",
+          isElectron
+            ? "drag-region flex h-[52px] items-center"
+            : "pb-2 pt-[calc(0.5rem+env(safe-area-inset-top))] sm:pb-3 sm:pt-[calc(0.75rem+env(safe-area-inset-top))]",
           desktopTopBarTrafficLightGutterClassName,
         )}
       >
@@ -8183,8 +8185,8 @@ export default function ChatView({
               <>
                 <div
                   className={cn(
-                    "chat-pane-enter px-3 pt-0 sm:px-5 sm:pt-0",
-                    isGitRepo ? "pb-1" : "pb-2.5 sm:pb-3",
+                    "composer-dock-pad chat-pane-enter px-3 pt-0 sm:px-5 sm:pt-0",
+                    isGitRepo ? "[--composer-base-gap:0.25rem]" : "[--composer-base-gap:0.625rem]",
                   )}
                 >
                   <form

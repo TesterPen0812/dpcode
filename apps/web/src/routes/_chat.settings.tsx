@@ -3159,9 +3159,9 @@ function SettingsRouteView() {
             </div>
           </div>
         ) : (
-          <header className="border-b border-border/70 px-3 py-2 sm:px-5">
+          <header className="border-b border-border/70 px-3 pb-2 pt-[calc(0.5rem+env(safe-area-inset-top))] sm:px-5 sm:pt-[calc(0.5rem+env(safe-area-inset-top))]">
             <div className="flex items-center gap-2">
-              <SidebarHeaderTrigger className="size-7 shrink-0" />
+              <SidebarHeaderTrigger className="size-9 shrink-0 sm:size-7" />
               <span className="text-sm font-medium text-foreground">Settings</span>
               <div className="ms-auto flex items-center gap-2">
                 <Button
@@ -3180,7 +3180,7 @@ function SettingsRouteView() {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-2xl px-6 py-6">
+          <div className="mx-auto w-full max-w-2xl px-6 pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
             {/* Section header */}
             <div className="mb-6">
               <h1 className="text-2xl font-semibold text-foreground">{activeSectionItem.label}</h1>

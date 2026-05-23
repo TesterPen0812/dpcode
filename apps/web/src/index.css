@@ -329,6 +329,45 @@ body,
   overscroll-behavior-y: none;
 }
 
+/* ------------------------------------------------------------------ */
+/* Mobile / PWA: safe areas + virtual keyboard                         */
+/*                                                                     */
+/* All insets resolve to 0px on desktop and non-notched devices, so    */
+/* the utilities below are no-ops outside of mobile/standalone PWA use.*/
+/* `--keyboard-inset-bottom` is maintained at runtime by               */
+/* installVirtualKeyboardInsetTracking() (see lib/virtualKeyboardInset).*/
+/* ------------------------------------------------------------------ */
+:root {
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --keyboard-inset-bottom: 0px;
+}
+
+/* Docked chat composer: keep a base gap on desktop, and grow to clear the
+   home indicator / on-screen keyboard on mobile.
+   (Headers handle their own safe-area via Tailwind `calc(... + env(...))`
+   arbitrary values so they never lose their desktop padding.) */
+.composer-dock-pad {
+  padding-bottom: max(
+    var(--composer-base-gap, 0.625rem),
+    var(--safe-area-bottom),
+    var(--keyboard-inset-bottom)
+  );
+}
+
+/* Sidebar drawer (mobile sheet) should respect the notch + home indicator. */
+[data-slot="sidebar"][data-mobile="true"] {
+  padding-top: var(--safe-area-top);
+  padding-bottom: var(--safe-area-bottom);
+  padding-left: var(--safe-area-left);
+}
+[data-slot="sidebar"][data-mobile="true"][data-side="right"] {
+  padding-left: 0;
+  padding-right: var(--safe-area-right);
+}
+
 /* Preserve inset variant rounding (inherits from the main element) */
 [data-slot="sidebar"][data-variant="inset"]
   ~ [data-slot="sidebar-inset"]
