@@ -7815,7 +7815,7 @@ export default function ChatView({
                   ) : phase === "running" ? (
                     <button
                       type="button"
-                      className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-[var(--color-text-foreground)] text-[var(--color-background-surface)] transition-all duration-150 hover:scale-105 sm:h-[26px] sm:w-[26px]"
+                      className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-[var(--color-text-foreground)] text-[var(--color-background-surface)] transition-all duration-150 hover:scale-105 sm:h-[26px] sm:w-[26px]"
                       onClick={() => void onInterrupt()}
                       aria-label="Stop generation"
                       title="Stop the current response. On Mac, press Ctrl+C to interrupt."
@@ -7883,7 +7883,7 @@ export default function ChatView({
                         ) : null}
                         <button
                           type="submit"
-                          className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-text-foreground)] text-[var(--color-background-surface)] transition-all duration-150 hover:scale-105 disabled:opacity-20 disabled:hover:scale-100 sm:h-8 sm:w-8"
+                          className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-text-foreground)] text-[var(--color-background-surface)] transition-all duration-150 hover:scale-105 disabled:opacity-20 disabled:hover:scale-100 sm:h-8 sm:w-8"
                           disabled={
                             isSendBusy ||
                             isConnecting ||
@@ -8568,7 +8568,7 @@ export default function ChatView({
                               ) : phase === "running" ? (
                                 <button
                                   type="button"
-                                  className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-[var(--color-text-foreground)] text-[var(--color-background-surface)] transition-all duration-150 hover:scale-105 sm:h-[26px] sm:w-[26px]"
+                                  className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-[var(--color-text-foreground)] text-[var(--color-background-surface)] transition-all duration-150 hover:scale-105 sm:h-[26px] sm:w-[26px]"
                                   onClick={() => void onInterrupt()}
                                   aria-label="Stop generation"
                                   title="Stop the current response. On Mac, press Ctrl+C to interrupt."
@@ -8641,7 +8641,7 @@ export default function ChatView({
                                     ) : null}
                                     <button
                                       type="submit"
-                                      className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-text-foreground)] text-[var(--color-background-surface)] transition-all duration-150 hover:scale-105 disabled:opacity-20 disabled:hover:scale-100 sm:h-8 sm:w-8"
+                                      className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-text-foreground)] text-[var(--color-background-surface)] transition-all duration-150 hover:scale-105 disabled:opacity-20 disabled:hover:scale-100 sm:h-8 sm:w-8"
                                       disabled={
                                         isSendBusy ||
                                         isConnecting ||

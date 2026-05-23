@@ -11,10 +11,12 @@ import "./storageKeyMigration";
 import { appHistory } from "./appNavigation";
 import { getRouter } from "./router";
 import { APP_DISPLAY_NAME } from "./branding";
+import { registerServiceWorker } from "./registerServiceWorker";
 
 const router = getRouter(appHistory);
 
 document.title = APP_DISPLAY_NAME;
+registerServiceWorker();
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>

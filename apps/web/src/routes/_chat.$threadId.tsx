@@ -134,7 +134,7 @@ const RightPanelSheet = (props: {
         side="right"
         showCloseButton={false}
         keepMounted
-        className="h-full min-h-0 w-[min(88vw,820px)] max-w-[820px] p-0"
+        className="h-full min-h-0 w-full max-w-none p-0 sm:w-[min(88vw,820px)] sm:max-w-[820px]"
       >
         {props.children}
       </SheetPopup>
@@ -952,10 +952,12 @@ function SplitPaneSurface(props: {
     direction: SplitDirection;
     side: SplitDropSide;
   }) => void;
+  panelPresentation?: "embedded" | "sheet";
 }) {
   const paneScopeId = `${props.splitView.id}:${props.paneId}`;
   const panelOpen = props.panelState.panel !== null;
   const shouldRenderPanelContent = panelOpen || props.panelState.hasOpenedPanel;
+  const usePanelSheet = props.panelPresentation === "sheet";
 
   const onDropThread = props.onDropThread;
   const handleDrop = useCallback(
@@ -1017,18 +1019,41 @@ function SplitPaneSurface(props: {
           )}
         </SidebarInset>
       </ChatPaneDropOverlay>
-      <SplitPaneEmbeddedPanel
-        splitViewId={props.splitView.id}
-        paneId={props.paneId}
-        paneScopeId={paneScopeId}
-        panelOpen={panelOpen && shouldRenderPanelContent}
-        panel={props.panelState.panel}
-        threadId={props.threadId}
-        onClosePanel={props.onClosePanel}
-        panelState={props.panelState}
-        isFocused={props.isFocused}
-        onUpdatePanelState={props.onUpdatePanelState}
-      />
+      {usePanelSheet ? (
+        <RightPanelSheet panelOpen={panelOpen} onClosePanel={props.onClosePanel}>
+          {panelOpen && shouldRenderPanelContent && props.threadId ? (
+            props.panelState.panel === "browser" ? (
+              <BrowserPanel
+                mode="sidebar"
+                threadId={props.threadId}
+                onClosePanel={props.onClosePanel}
+              />
+            ) : (
+              <LazyDiffPanel
+                mode="sheet"
+                threadId={props.threadId}
+                onClosePanel={props.onClosePanel}
+                panelState={props.panelState}
+                liveRefreshEnabled={props.isFocused}
+                onUpdatePanelState={props.onUpdatePanelState}
+              />
+            )
+          ) : null}
+        </RightPanelSheet>
+      ) : (
+        <SplitPaneEmbeddedPanel
+          splitViewId={props.splitView.id}
+          paneId={props.paneId}
+          paneScopeId={paneScopeId}
+          panelOpen={panelOpen && shouldRenderPanelContent}
+          panel={props.panelState.panel}
+          threadId={props.threadId}
+          onClosePanel={props.onClosePanel}
+          panelState={props.panelState}
+          isFocused={props.isFocused}
+          onUpdatePanelState={props.onUpdatePanelState}
+        />
+      )}
       {props.isFocused ? (
         <div
           aria-hidden="true"
@@ -1048,6 +1073,7 @@ function SplitPaneSurface(props: {
 function SplitChatSurface(props: { splitViewId: SplitViewId; routeThreadId: ThreadIdType }) {
   const navigate = useNavigate();
   const { handleNewChat } = useHandleNewChat();
+  const useMobileSplitSurface = useMediaQuery("max-md");
   const selectAllThreads = useMemo(() => createAllThreadsSelector(), []);
   const threads = useStore(selectAllThreads);
   const projects = useStore((store) => store.projects);
@@ -1467,6 +1493,107 @@ function SplitChatSurface(props: { splitViewId: SplitViewId; routeThreadId: Thre
   const pickerLeaf = threadPickerPaneId
     ? findLeafPaneById(activeSplitView.root, threadPickerPaneId)
     : null;
+  const focusedLeaf = findLeafPaneById(activeSplitView.root, activeSplitView.focusedPaneId);
+  const focusedExcludedThreadIds = useMemo(
+    () => new Set<ThreadIdType>(splitThreadIds),
+    [splitThreadIds],
+  );
+
+  if (useMobileSplitSurface && focusedLeaf) {
+    return (
+      <>
+        <div className="flex h-dvh min-h-0 min-w-0 flex-1 overflow-hidden bg-background">
+          <SplitPaneSurface
+            key={focusedLeaf.id}
+            splitView={activeSplitView}
+            paneId={focusedLeaf.id}
+            threadId={focusedLeaf.threadId}
+            panelState={focusedLeaf.panel}
+            isFocused
+            deferChatMount={false}
+            canDropInDirection={allowAnySplitDirection}
+            excludedThreadIds={focusedExcludedThreadIds}
+            threads={selectableThreads}
+            projects={projects}
+            onFocus={() => setPaneFocus(focusedLeaf.id)}
+            onToggleDiff={() => togglePanePanel(focusedLeaf.id, "diff")}
+            onToggleBrowser={() => togglePanePanel(focusedLeaf.id, "browser")}
+            onOpenTurnDiff={(turnId, filePath) =>
+              openPaneTurnDiff(focusedLeaf.id, turnId, filePath)
+            }
+            onClosePanel={() => closePanePanel(focusedLeaf.id)}
+            onUpdatePanelState={(patch) => updatePanePanelState(focusedLeaf.id, patch)}
+            onMaximize={maximizeFocusedPane}
+            onCloseThreadPane={() => closePaneThread(focusedLeaf.id)}
+            onChooseThread={() => {
+              setPaneFocus(focusedLeaf.id);
+              setThreadPickerPaneId(focusedLeaf.id);
+            }}
+            onSelectThread={(threadId) => chooseThreadForPane(threadId, focusedLeaf.id)}
+            onChatMounted={noop}
+            onDropThread={(payload) => handleDropThreadOnPane(focusedLeaf.id, payload)}
+            panelPresentation="sheet"
+          />
+        </div>
+        <Dialog
+          open={threadPickerPaneId !== null}
+          onOpenChange={(open) => {
+            if (!open) {
+              setThreadPickerPaneId(null);
+            }
+          }}
+        >
+          <DialogPopup className="max-w-lg">
+            <DialogHeader className="items-center text-center">
+              <DialogTitle>Choose Chat</DialogTitle>
+              <DialogDescription className="max-w-sm text-center">
+                Pick which chat should appear in the focused split pane.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogPanel className="space-y-3">
+              <div className="max-h-[56vh] space-y-1 overflow-y-auto">
+                {selectableThreads.map((thread) => {
+                  const projectName =
+                    projects.find((project) => project.id === thread.projectId)?.name ??
+                    "Project";
+                  const isSelected = focusedLeaf.threadId === thread.id;
+                  return (
+                    <button
+                      key={thread.id}
+                      type="button"
+                      className={cn(
+                        "flex min-h-11 w-full items-center gap-3 rounded-lg border px-3 py-2 text-left transition-colors",
+                        isSelected
+                          ? "border-[color:var(--color-border)] bg-[var(--sidebar-accent)]"
+                          : "border-[color:var(--color-border-light)] hover:bg-[var(--sidebar-accent)]",
+                      )}
+                      onClick={() => chooseThreadForPane(thread.id)}
+                    >
+                      <ProviderIcon
+                        provider={thread.modelSelection.provider}
+                        className="size-4 shrink-0"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-medium text-foreground">
+                          {resolveThreadPickerTitle(thread.title)}
+                        </div>
+                        <div className="truncate text-xs text-muted-foreground">{projectName}</div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              <DialogFooter variant="bare">
+                <Button type="button" variant="outline" onClick={() => setThreadPickerPaneId(null)}>
+                  Cancel
+                </Button>
+              </DialogFooter>
+            </DialogPanel>
+          </DialogPopup>
+        </Dialog>
+      </>
+    );
+  }
 
   return (
     <>
@@ -1544,6 +1671,7 @@ function SingleChatSurface(props: {
 }) {
   const navigate = useNavigate();
   const shouldUseDiffSheet = useMediaQuery(DIFF_INLINE_LAYOUT_MEDIA_QUERY);
+  const shouldUseMobilePanelSheet = useMediaQuery("max-md");
   const createSplitView = useSplitViewStore((store) => store.createFromThread);
   const createSplitViewFromDrop = useSplitViewStore((store) => store.createFromDrop);
   const panelState = useSingleChatPanelStore(selectSingleChatPanelState(props.threadId));
@@ -1698,7 +1826,10 @@ function SingleChatSurface(props: {
     [props.threadId],
   );
 
-  if (!shouldUseDiffSheet || activePanel === "browser") {
+  const shouldUsePanelSheet =
+    shouldUseMobilePanelSheet || (shouldUseDiffSheet && activePanel !== "browser");
+
+  if (!shouldUsePanelSheet) {
     return (
       <div className="flex h-dvh min-h-0 min-w-0 flex-1 overflow-hidden bg-background">
         <ChatPaneDropOverlay
@@ -1779,13 +1910,17 @@ function SingleChatSurface(props: {
       </ChatPaneDropOverlay>
       <RightPanelSheet panelOpen={panelOpen} onClosePanel={closePanel}>
         {shouldRenderPanelContent ? (
-          <LazyDiffPanel
-            mode="sheet"
-            threadId={props.threadId}
-            panelState={panelState}
-            onUpdatePanelState={updatePanelState}
-            onClosePanel={closePanel}
-          />
+          activePanel === "browser" ? (
+            <BrowserPanel mode="sidebar" threadId={props.threadId} onClosePanel={closePanel} />
+          ) : (
+            <LazyDiffPanel
+              mode="sheet"
+              threadId={props.threadId}
+              panelState={panelState}
+              onUpdatePanelState={updatePanelState}
+              onClosePanel={closePanel}
+            />
+          )
         ) : null}
       </RightPanelSheet>
     </>

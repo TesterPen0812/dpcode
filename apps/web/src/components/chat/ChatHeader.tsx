@@ -263,7 +263,7 @@ export const ChatHeader = memo(function ChatHeader({
                   </span>
                 )}
                 <h2
-                  className="max-w-[clamp(12rem,42vw,36rem)] truncate text-sm font-medium text-foreground"
+                  className="min-w-0 max-w-full truncate text-sm font-medium text-foreground sm:max-w-[clamp(12rem,42vw,36rem)]"
                   title={activeThreadTitle}
                   onDoubleClick={() => onRenameThread()}
                 >
